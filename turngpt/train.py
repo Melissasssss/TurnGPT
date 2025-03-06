@@ -1,12 +1,12 @@
 from argparse import ArgumentParser
 from os import makedirs
 from os.path import join
-from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-
-import pytorch_lightning as pl
-
-from datasets_turntaking import DialogTextDM
+from lightning.pytorch.loggers import WandbLogger
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
+import lightning.pytorch as L
+# import pytorch_lightning as pl
+# from pytorch_lightning.cli import LightningCLI
+from datasets_turntaking import ConversationalDM 
 from turngpt.model import TurnGPT, TurnGPTWandbCallbacks
 
 
@@ -50,8 +50,13 @@ def default_logger_callbacks(name, args, callbacks):
 def train():
     parser = ArgumentParser()
     parser = TurnGPT.add_model_specific_args(parser)
-    parser = DialogTextDM.add_data_specific_args(parser)
-    parser = pl.Trainer.add_argparse_args(parser)
+    parser = ConversationalDM.add_data_specific_args(parser)
+
+    # parser = pl.Trainer.add_argparse_args(parser)
+
+    parser.add_argument("--trust_remote_code", type=bool, default=True)
+    parser.add_argument("--accumulate_grad_batches", type=int, default=10)
+    parser.add_argument("--gpus", type=int, default=1)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--name_info", type=str, default="")
     parser.add_argument("--early_stopping", action="store_true")
@@ -59,8 +64,9 @@ def train():
     args = parser.parse_args()
 
     print("Datasets: ", args.datasets)
+    print("args", args)
 
-    pl.seed_everything(args.seed)
+    L.seed_everything(args.seed)
 
     # Model
     print("Loading Model...")
@@ -82,7 +88,7 @@ def train():
     model.print_parameters()
 
     # DataModule
-    dm = DialogTextDM(
+    dm = ConversationalDM(
         datasets=args.datasets,
         tokenizer=model.tokenizer,
         batch_size=args.batch_size,
@@ -100,18 +106,24 @@ def train():
     logger = None
     callbacks = None
 
+    import torch
+    print("Lightning version:", L.__version__)
+    print("Torch version:", torch.__version__)
+    print("CUDA is available:", torch.cuda.is_available())  
+
     # this should be handled automatically with pytorch_lightning?
-    if not args.fast_dev_run:
-        callbacks = [TurnGPTWandbCallbacks()]
-        logger, callbacks = default_logger_callbacks(
-            name=model.run_name, args=args, callbacks=callbacks
-        )
+    # if not args.fast_dev_run:
+    #     callbacks = [TurnGPTWandbCallbacks()]
+    #     logger, callbacks = default_logger_callbacks(
+    #         name=model.run_name, args=args, callbacks=callbacks
+    #     )
 
     # Trainer
-    trainer = pl.Trainer.from_argparse_args(
-        args=args,
-        logger=logger,
-        callbacks=callbacks,
+
+    trainer = L.Trainer( #removed .from_argparse_args
+        # args=args,
+        # logger=logger,
+        # callbacks=callbacks,
     )
 
     trainer.fit(model, datamodule=dm)

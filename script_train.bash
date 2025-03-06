@@ -14,4 +14,4 @@ train="python turngpt/train.py --gpus -1 --batch_size 2 --accumulate_grad_batche
 # Example:
 # $train --datasets daily_dialog meta_woz
 
-$train
+$train --datasets daily_dialog meta_woz

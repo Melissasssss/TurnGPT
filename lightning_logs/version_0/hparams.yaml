@@ -1,0 +1,11 @@
+pretrained_model_name_or_path: gpt2
+pretrained: true
+trp_projection_steps: -1
+trp_projection_type: linear
+omit_dialog_states: false
+no_train_first_n: -1
+learning_rate: 6.25e-05
+weight_loss: false
+weight_regular_token: 0.5
+weight_eos_token: 1.0
+dropout: null

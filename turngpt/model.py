@@ -5,7 +5,8 @@ import wandb
 
 from transformers import GPT2LMHeadModel, GPT2Config
 from transformers.models.gpt2.modeling_gpt2 import GPT2DoubleHeadsModelOutput
-import pytorch_lightning as pl
+# import pytorch_lightning as pl
+import lightning as L
 import torch
 import torch.nn as nn
 
@@ -143,7 +144,7 @@ class Utils:
         return out
 
 
-class TurnGPTWandbCallbacks(pl.Callback):
+class TurnGPTWandbCallbacks(L.Callback):
     turn_list = [
         ["yesterday we met in the park", "okay when will you meet again", "tomorrow"],
         [
@@ -235,7 +236,7 @@ class TurnGPTWandbCallbacks(pl.Callback):
         self.generate(trainer, pl_module, name="Gen-chpt")
 
 
-class TurnGPT(pl.LightningModule, Utils):
+class TurnGPT(L.LightningModule, Utils):
     """
     This is the code example of teaching and research.
 
